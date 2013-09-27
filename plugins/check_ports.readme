@@ -1,0 +1,27 @@
+Usage
+Plugin accepts 3 arguments:
+-o <ip>  : remote host to scan -p <ports>   : list of ports to scan -t <timeout>] (optional)
+
+Example from command line:
+# Scan for port 22 and 25 on a remote server 192.168.1.100
+./check_ports.py -o 192.168.1.100 -p 22,25
+Only two return states are allowed:
+OK: All the given ports are opened CRITICAL: At list one of the given port is closed
+State: OK
+./check_ports.py -o 188.165.195.56 -p 22
+OK; opened 22 ; closed
+State CRITICAL
+./check_ports.py -o 188.165.195.56 -p 23
+CRITICAL; opened  ; closed 23
+Check_mk configuration
+The easier way to configure the plugin is define a command as legacy check, and
+Check_mk will do the rest:
+# 'check_ports'
+define command{
+  command_name check_ports
+  command_line $USER1$/check_ports.py -o $ARG1$ -p $ARG2$ 
+}
+Then you can specify a list of remote server to test as show below:
+(( "Check_ports!127.0.0.1!22,23", "Check ports", False), ['host'])
+Note: be sure you are not blocked by a firewall.
+- See more at: http://blog.redturtle.it/2013/01/11/how-to-write-custom-plugin-for-nagios-and-check_mk#sthash.IvkAl460.dpuf

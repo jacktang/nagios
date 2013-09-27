@@ -37,6 +37,7 @@ check_process_group([Node, Group, WarnLvl, CritLvl]) ->
 %%      Has no return value due to calling erlang:halt/1.
 %% @term check_node(atom()).
 check_node([Node]) ->	    
+    io:format("a~n", []),
     format_output(check_node_inner(Node)).
 
 %% @doc Check if the specified application is currently running on the specified node,
@@ -73,16 +74,22 @@ check_application_inner(Node, Application) when is_list(Node) ->
 check_application_inner(Node, Application) when is_list(Application) ->    
     check_application_inner(Node, list_to_atom(Application));
 check_application_inner(Node, Application) ->
-    case rpc:call(Node, application, start, [Application], ?RPC_TIMEOUT) of
-	{badrpc, timeout} ->
-	    {warning, "Node ~p did not respond within ~p milliseconds.~n", [Node, ?RPC_TIMEOUT]};
-	{badrpc, _} ->
-	    {critical, "Couldn't contact Node ~p.~n", [Node]};
-	{error, {already_started, Application}} ->
-	    {ok, "Application ~p running on Node ~p.~n", [Application, Node]};
-	%% @todo move the {application_started ???} -> critical, _Other -> unknown
-	_Other ->
-	    {critical, "Application ~p not running on Node ~p.~n", [Application, Node]}
+    case rpc:call(Node, application, which_applications, [], ?RPC_TIMEOUT) of
+        {badrpc, timeout} ->
+            {warning, "Node ~p did not respond within ~p milliseconds.~n",
+             [Node, ?RPC_TIMEOUT]};
+        {badrpc, _} ->
+            {critical, "Couldn't contact Node ~p.~n", [Node]};
+        {ok, Applications} ->
+            case lists:filter(fun(Info) -> element(1, Info) =:= Application end,
+                              Applications) of
+                [] ->
+                    {critical, "Application ~p not running on Node ~p.~n",
+                     [Application, Node]};
+                _ ->
+                    {ok, "Application ~p running on Node ~p.~n",
+                     [Application, Node]}
+            end
     end.
 
 %% @doc Check status of a remote node's pg2 groups  and return Nagios friendly response.

@@ -101,6 +101,10 @@ while test -n "$1"; do
 	    NODE=$2
 	    shift
 	    ;;
+  --beam|-b)
+      BEAM=$2
+      shift
+      ;;
 	*)
 	    echo "Uknown argument: $1"
 	    print_help

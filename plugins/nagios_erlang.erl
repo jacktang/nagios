@@ -37,7 +37,6 @@ check_process_group([Node, Group, WarnLvl, CritLvl]) ->
 %%      Has no return value due to calling erlang:halt/1.
 %% @term check_node(atom()).
 check_node([Node]) ->	    
-    io:format("a~n", []),
     format_output(check_node_inner(Node)).
 
 %% @doc Check if the specified application is currently running on the specified node,

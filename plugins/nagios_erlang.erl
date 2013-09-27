@@ -79,7 +79,7 @@ check_application_inner(Node, Application) ->
              [Node, ?RPC_TIMEOUT]};
         {badrpc, _} ->
             {critical, "Couldn't contact Node ~p.~n", [Node]};
-        {ok, Applications} ->
+        Applications when is_list(Applications) ->
             case lists:filter(fun(Info) -> element(1, Info) =:= Application end,
                               Applications) of
                 [] ->
